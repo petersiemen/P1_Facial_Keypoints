@@ -6,4 +6,4 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 
 from models import *
 from preprocess import *
-from facial_keypoint_dataset import *
+from facial_keypoints_dataset import *
