@@ -24,3 +24,5 @@ def test_model():
 
     output = net(one_file_batch)
     print(output)
+
+    assert output.shape == torch.Size([1, 136])

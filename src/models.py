@@ -39,9 +39,6 @@ class Net(nn.Module):
     24      Dropout6        (1000)
     25      Dense3          (2)
 
-
-
-
     """
 
     def __init__(self):
@@ -57,7 +54,7 @@ class Net(nn.Module):
 
         self.features = nn.Sequential(
             # input 1x224x224
-            nn.Conv2d(in_channels=1, out_channels=32, kernel_size=(4,4)),  # 32x221x221
+            nn.Conv2d(in_channels=1, out_channels=32, kernel_size=(4, 4)),  # 32x221x221
             nn.ELU(),
             nn.MaxPool2d(kernel_size=(2, 2), stride=2),  # 32x110x110
             nn.Dropout2d(p=0.1),
@@ -67,19 +64,19 @@ class Net(nn.Module):
             nn.MaxPool2d(kernel_size=(2, 2), stride=2),  # 64x54x54
             nn.Dropout2d(p=0.2),
 
-            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=2), # 128x53x53
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=2),  # 128x53x53
             nn.ELU(),
             nn.MaxPool2d(kernel_size=(2, 2), stride=2),  # 128x26x26
             nn.Dropout2d(p=0.3),
 
-            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=1), # 256x26x26
+            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=1),  # 256x26x26
             nn.ELU(),
-            nn.MaxPool2d(kernel_size=(2, 2), stride=2), # 256x13x13
+            nn.MaxPool2d(kernel_size=(2, 2), stride=2),  # 256x13x13
             nn.Dropout2d(p=0.4)
         )
 
         self.classifier = nn.Sequential(
-            nn.Linear(in_features=9984, out_features=1000),
+            nn.Linear(in_features=256 * 13 * 13, out_features=1000),
             nn.ELU(),
             nn.Dropout2d(p=0.5),
             nn.Linear(in_features=1000, out_features=1000),
@@ -97,13 +94,7 @@ class Net(nn.Module):
         ## x = self.pool(F.relu(self.conv1(x)))
 
         x = self.features(x)
-        x = x.view(x.size(0), -1) # flatten feature maps
+        x = x.view(x.size(0), -1)  # flatten feature maps
         x = self.classifier(x)
         return x
-
-
-net = Net()
-print(net)
-
-
 
