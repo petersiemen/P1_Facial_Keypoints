@@ -1,15 +1,16 @@
 ## TODO: define the convolutional neural network architecture
 
-import torch
-from torch.autograd import Variable
-import torch.nn as nn
-import torch.nn.functional as F
 # can use the below import should you choose to initialize the weights of your Net
-import torch.nn.init as I
+import math
+import torch.nn as nn
 
 
 class Net(nn.Module):
     """
+    This network implements the architecture from the NaimeshNet https://arxiv.org/pdf/1710.00977.pdf
+    with the difference of predicting 136 facial key points instead of only 2 as in the paper.
+
+
     Layer   NumberLayer     Shape
     1       Input1          (1,96,96)
     2       Convolution2d1  (32,93,93)
@@ -41,7 +42,7 @@ class Net(nn.Module):
 
     """
 
-    def __init__(self):
+    def __init__(self, image_width=224):
         super(Net, self).__init__()
 
         ## TODO: Define all the layers of this CNN, the only requirements are:
@@ -75,8 +76,20 @@ class Net(nn.Module):
             nn.Dropout2d(p=0.4)
         )
 
+        def output_image_width_conv(image_width, kernel_size, stride=1, padding=0):
+            return math.floor((image_width - kernel_size + 2 * padding) / stride + 1)
+
+        image_width_for_classifier = output_image_width_conv(image_width=image_width, kernel_size=4)
+        image_width_for_classifier = math.floor(image_width_for_classifier / 2)
+        image_width_for_classifier = output_image_width_conv(image_width=image_width_for_classifier, kernel_size=3)
+        image_width_for_classifier = math.floor(image_width_for_classifier / 2)
+        image_width_for_classifier = output_image_width_conv(image_width=image_width_for_classifier, kernel_size=2)
+        image_width_for_classifier = math.floor(image_width_for_classifier / 2)
+        image_width_for_classifier = output_image_width_conv(image_width=image_width_for_classifier, kernel_size=1)
+        image_width_for_classifier = math.floor(image_width_for_classifier / 2)
+
         self.classifier = nn.Sequential(
-            nn.Linear(in_features=256 * 13 * 13, out_features=1000),
+            nn.Linear(in_features=256 * image_width_for_classifier * image_width_for_classifier, out_features=1000),
             nn.ELU(),
             nn.Dropout2d(p=0.5),
             nn.Linear(in_features=1000, out_features=1000),
@@ -85,16 +98,11 @@ class Net(nn.Module):
 
         )
 
-        ## Note that among the layers to add, consider including:
-        # maxpooling layers, multiple conv layers, fully-connected layers, and other layers (such as dropout or batch normalization) to avoid overfitting
-
     def forward(self, x):
         ## TODO: Define the feedforward behavior of this model
         ## x is the input image and, as an example, here you may choose to include a pool/conv step:
-        ## x = self.pool(F.relu(self.conv1(x)))
 
         x = self.features(x)
         x = x.view(x.size(0), -1)  # flatten feature maps
         x = self.classifier(x)
         return x
-
