@@ -1,6 +1,9 @@
 import torch
 import numpy as np
 import cv2
+import random
+import torchvision.transforms.functional as F
+from PIL import Image
 
 
 # tranforms
@@ -93,6 +96,37 @@ class RandomCrop(object):
         key_pts = key_pts - [left, top]
 
         return {'image': image, 'keypoints': key_pts}
+
+
+class RandomHorizontalFlip(object):
+
+    def __init__(self, p):
+        self.p = p
+
+    def __call__(self, sample):
+        """
+        Args:
+            img (PIL Image): Image to be flipped.
+
+        Returns:
+            PIL Image: Randomly flipped image.
+        """
+        image, key_pts = sample['image'], sample['keypoints']
+        pil_image = Image.fromarray(image)
+        if random.random() < self.p:
+            pil_image = F.hflip(pil_image)
+            h, w = image.shape[:2]
+            flipped_key_pts = []
+            for pt in key_pts:
+                x,y = pt
+                x = w - x
+                flipped_key_pts.append([x,y])
+            key_pts = flipped_key_pts
+
+        numpy_arr = np.array(pil_image)
+
+
+        return {'image': numpy_arr, 'keypoints': key_pts}
 
 
 class ToTensor(object):

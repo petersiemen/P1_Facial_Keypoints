@@ -18,6 +18,22 @@ def test_normalize_and_rescale_keypoints():
     print("Standard deviation of keypoints y-values: {}".format(pairs[:, 1].std()))
 
 
+def test_random_horizontal_flip():
+    data_transform = transforms.Compose([RandomHorizontalFlip(1)])
+
+    # create the transformed dataset
+    transformed_dataset = FacialKeypointsDataset(csv_file=os.path.join(HERE, '../data/training_frames_keypoints.csv'),
+                                                 root_dir=os.path.join(HERE, '../data/training/'),
+                                                 transform=data_transform)
+
+    n = len(transformed_dataset)
+    for i in range(10):
+        sample = transformed_dataset[i]
+        # numpy image: H x W x C
+        image, key_pts = sample['image'], sample['keypoints']
+        print(key_pts)
+
+
 def test_rescale():
     data_transform = transforms.Compose([Rescale(100)])
 
